@@ -1,0 +1,170 @@
+Big Data 
+Data yang sangat besar
+
+5V Karakteristik : 
+-> Volume yang besar
+-> Velocity in out nya cepat
+-> Value
+-> Variety (Jenisnya banyak)
+-> Veracity (Accuracy & Quality)
+
+Cloudera (VMware)
+Virtual Machine yang memiliki banyak tools untuk mengelola big data
+-> hadoop : framework open source yang berguna untuk management data
+-> mysql 
+-> mongodb
+-> pyspark
+
+Buka hue di website, dan masukkan username dan password nya sebagai cloudera
+
+pip install mrjob
+
+menggunakan mrjob sebagai library untuk map reduce
+
+COMMAND LINE
+=====================
+di desktop
+hadoop fs -copyFromLocal Dataset
+
+PIG 
+=====================
+PIG Bahasa yang akan digunakan oleh Cloudera
+Buka ke ApplicationList dan tulis pig
+charArray (string)
+
+App = LOAD 'Dataset/ApplicationList/app.csv' USING PigStorage(',') AS (AppID:int, AppName:charArray, CategoryID:int, Rating:float, AppSize:charArray, AppType:charArray, Price:long, ReleaseDate:charArray, Version:charArray);
+
+-- Untuk Melihat atribute dari App
+DESCRIBE APP;
+DUMP APP;
+
+Category = LOAD 'Dataset/ApplicationList/category.csv' USING PigStorage(',') AS (CategoryID:int ,CategoryName:charArray);
+
+DESCRIBE Category;
+DUMP Category;
+
+GroupedApp = GROUP App By CategoryID;
+
+Penjelasan 
+===================
+FOREACH __ GENERATE -> SELECT, Type Casting, Aggregate
+Result = FOREACH GroupedApp GENERATE group AS CategoryID, COUNT(App.CategoryID) AS TotalApp;
+SelectedApp = FOREACH App Generate (charArray)AppID, AppName;
+
+JoinedTable = JOIN Result BY CategoryID, Category BY CategoryID;
+
+JoinedTable = FOREACH JoinedTable GENERATE Category::CategoryName AS CategoryName, Result::TotalApp AS TotalApp;
+
+JoinedTable = ORDER JoinedTable BY TotalApp;
+
+
+Pertemuan 3
+=============================
+HIVE 
+-> Lebih banyak fitur tapi labat
+-> Lebih fokus ke storage
+Create Table
+
+--Run Query CTRL + Enter
+CREATE DATABASE RamenShop;
+
+CREATE EXTERNAL TABLE MsCustomer(
+    CustomerID INT,
+    CustomerName VARCHAR(50),
+    CustomerPhone VARCHAR(20),
+    CustomerEmail VARCHAR(50)
+)
+
+-- Karena bentuknya CSV
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY ','
+-- Skip baris pertama dari si table
+TBLPROPERTIES('skip.header.line.count' = '1');
+
+--Masukkan Datanya
+LOAD DATA INPATH "/user/cloudera/Dataset/RamenShop-Hive/MsCustomer.csv" INTO TABLE MsCustomer
+SELECT * FROM MsCustomer
+
+Impala 
+-> Lebih dikit fitur tapi lebih cepat
+-> Lebih fokus ke query transactional
+Ngerjain Query nya
+
+
+mysql -> Hive
+	sqoop
+Menyambungkan data relational ke dalam hive (jdbc)
+
+Sqoop
+=====================
+mysql -u root -p
+password :cloudera
+
+CREATE DATABASE ramenshop
+USE ramenshop;
+SHOW TABLES;
+
+#untuk menjalankan create+insert yang ada di sql
+source create+insert.sql
+
+Import dari mysql ke hive
+
+sudo sqoop import-all-tables --connect jdbc:mysql://quickstart:3306/ramenshop --username=root -P --hive-import --hive-database=ramenshop
+
+
+Pertemuan 4 - MongoDB
+=============================
+# Nampilin semua database yang ada
+show dbs
+# Create atau use database
+use restaurant
+# Create atau insert collection
+db.[nama collection].insert({[Key]: [Value]})
+
+db.product.insert({"Name" : "Fried Chicken", "Price" : 20000, "Type" : "Food"})
+db.product.insert({"Name" : "French Fries", "Price" : 16000, "Type" : "Food"})
+db.product.insert({"Name" : "Lemon Tea", "Price" : 8000, "Type" : "Drink"})
+
+db.product.find()
+db.product.find({"Name": "Lemon Tea"})
+db.product.find({"Price": {$gte: 16000}})
+$gt -> greater than
+$ls -> less than
+$eq -> equal
+$lte -> less than equal
+$nq -> not equal
+
+#update data
+db.product.update({"Name" : "Lemon Tea"}, {$set : {"Price" : 8500}})
+
+#delete data
+db.product.remove({"Name": "Lemon Tea"})
+
+#export collection menjadi .json
+sudo mongoexport --db=restaurant --collection=product --out=product.json
+
+#import collection menjadi .json
+sudo mongoimport --db=restaurant --collection=staff --file=staff.json
+
+Pertemuan 6 - Spark
+==================================
+library di python -> pyspark
+- SparkSQL
+- SparkStreaming
+- Machine Learning
+- Graph
+
+Introduction to Spark
+Type Data : 
+-> RDD (Resilient Distributed Dataset)
+Suatu data yang dibuat berdasarkan row dan column
+
+#Menjalankan jupyter notebook
+jupyter notebook
+
+never = 0
+ever = 1
+No Info = 2
+not current = 3
+former = 4
+current = 5
